@@ -1,6 +1,5 @@
 set (SRC_FILES
-    main.c
-    testing/alloc.c
+    main.cpp
 )
 
 add_executable(${BINARY} ${SRC_FILES} ${APP_SRC_FILES})
@@ -34,4 +33,3 @@ add_custom_target(run
 )
 
 add_dependencies(run ${BINARY})
-

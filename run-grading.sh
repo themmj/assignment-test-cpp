@@ -45,21 +45,6 @@ mkdir -p "$build_root"
 
 source ./assignment.conf
 
-# setup wraps
-wrap_functions+=("malloc") # default wrap functions for alloc checking
-wrap_functions+=("calloc")
-wrap_functions+=("realloc")
-wrap_functions+=("free" )
-wrap_cmake_file="$submission_repos_root/wraps.cmake"
-echo "generating compiler options for function wrapping in $wrap_cmake_file"
-echo "# automatically generated wrap compiler options based on assignment.conf, which should be edited instead of this file" > "$wrap_cmake_file"
-linker_flags="-Wl"
-for func in "${wrap_functions[@]}"; do
-    echo "adding wrapping for $func"
-    linker_flags="$linker_flags,--wrap=$func"
-done
-[ "$linker_flags" = "-Wl" ] || echo "set(BIN_LINK_OPTIONS $linker_flags)" >> "$wrap_cmake_file"
-
 # gather all available zip files
 submission_zips=()
 for filename in $submission_zips_location/*; do
@@ -95,20 +80,20 @@ for zip_file in "${submission_zips[@]}"; do
     echo "writing include dirs and submission source files to $submission_cmake_file"
     echo "# automatically generated include dirs and application files based on assignment.conf, which should be edited instead of this file" > "$submission_cmake_file"
     for file in "${assignment_source_files[@]}"; do
-        full_file="$current_submission_repo_dir/$file"
+        full_file="$current_submission_repo_dir/src/$file"
         # File content replacements could be done here following the below format
-        [[ "$full_file" == */main.c ]] && [ -f $full_file ] && sed -i 's/ *int *main *.int/int assignment_main(int argc, const char *argv[]);int assignment_main(int/' "$full_file"
+        [[ "$full_file" == */main.cpp ]] && [ -f $full_file ] && sed -i 's/ *int *main *.int/int assignment_main(int argc, const char *argv[]);int assignment_main(int/' "$full_file"
         submission_files+=("$full_file")
     done
     echo "set(APP_SRC_FILES ${submission_files[*]})" >> "$submission_cmake_file"
-    echo "set(INCLUDE_DIRS \${INCLUDE_DIRS} $current_submission_repo_dir)" >> "$submission_cmake_file"
+    echo "set(INCLUDE_DIRS \${INCLUDE_DIRS} $current_submission_repo_dir/src)" >> "$submission_cmake_file"
 
     # extract git user
     cd "$current_submission_repo_dir" && commit_user_name="$(git log -1 | grep Author | cut -d "<" -f 1 | cut -c 9-)" && cd - || abort "unable to extract author from most recent commit"
     echo "identified user $commit_user_name based on latest commit user"
 
     # build cmake project
-    cd "$build_root" && cmake .. -DDEBUG_BUILD=ON && cd - || abort "cmake did not initialize correctly"
+    cd "$build_root" && cmake .. -DCMAKE_BUILD_TYPE=Debug && cd - || abort "cmake did not initialize correctly"
 
     # build and run binary   
     test_result=0
@@ -117,7 +102,7 @@ for zip_file in "${submission_zips[@]}"; do
     make_output=$(make 2>&1 > /dev/null)
     if [ $? -eq 0 ]; then
         # build successful. run tests and calculate score
-        test_err_output="$(../out/assignment-test 2>&1 > /dev/null)"
+        test_err_output="$(../out/assignment-test)"
         test_result=$?
         [ $test_result -ne 100 ] && error_output="$test_err_output"
     else

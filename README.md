@@ -1,28 +1,26 @@
 # assignment grading automation
 
-Automatically run tests on a set of submissions for a programming assignment. Assignments should be based on [assignment-template](https://github.com/themmj/assignment-template).
+Automatically run tests on a set of submissions for a programming assignment. Assignments should be based on [assignment-template-cpp](https://github.com/themmj/assignment-template-cpp).
 
 ## Prerequisites
 
-- assignment is a C project with a `main.c` containing the `main` function  
+- assignment:
+   - is a C++ project
+   - with a `src/` folder containing all the code
+   - with a `main.c` containing the `main` function  
 - each submission is a zip file containing the assignments whole repository (including `.git` folder)
-- gcc toolchain installed (`ld` is required for the wrapping functionality)
 
 ## Features
 
 Besides general build automation and some cmake fun, this project provides the following features:
 
-### CMocka capabilities
+### GTest capabilities
 
-The individual testcases for an assignment are defined using [CMocka](https://api.cmocka.org/index.html). This means that all capabilites from assertions to paramteter checking are possible.
+The individual testcases for an assignment are defined using [GTest](https://github.com/google/googletest). This means that all capabilities from assertions to mocking are possible.
 
 ### Execute the submission's `main`
 
-The headers and cmake are configured in a way which renames the `main` function inside the submission's `main.c` when running the tests. This way it can be called with `CALL_ASSIGNMENT_MAIN` inside a test case, passing a variable number of arguments.
-
-### Function wrapping
-
-Using `ld`'s wrapper support one can define `__wrap_symbol` as a wrapper function for `symbol`. Any undefined reference to `symbol` will be linked against that wrapper. Calling `__real_symbol` will invoke the normal definition of `symbol`. Because every symbol intended for wrapping has to be passed to the linker manually the [configuration](#configuration) contains a variable containing all symbol names that should be wrapped. The rest is done automatically. Defining a wrapper function can easily be done with the `FUNC_WRAPPER` macro.
+The headers and cmake are configured in a way which renames the `main` function inside the submission's `main.cpp` when running the tests. This way it can be called with `CALL_ASSIGNMENT_MAIN` inside a test case, passing a variable number of arguments.
 
 ### Git user extraction
 
@@ -30,7 +28,8 @@ Extracts git user name from the latest commit to combat blatant copy/pasting of 
 
 ### Score calculation
 
-The score for a submission is calculated using the test results and the maximum points defined in the [configuration](#configuration). A build error counts as 0%. In case a submission does not achieve 100% its test failures or build errors are preserved for manual investigation if needed.
+The score for a submission is calculated using the inverse of the ratio of failed tests vs. total tests.
+A build error counts as 0%. In case a submission does not achieve 100% its test failures or build errors are preserved for manual investigation if needed.
 
 ### CSV export
 
@@ -38,11 +37,9 @@ The results are written to stdout and a result file in a CSV format using tabs a
 
 ## Configuration
 
-The assignment configuration resides in `./assignment.conf`. The individual paramteres stand for the following:
+The assignment configuration resides in `./assignment.conf`. The individual parameters stand for the following:
 
-- `max_points` (integer): represents the number of testcases defined for the assignment
 - `submission_zips_location` (string) absolute or relative path to all the submissions
-- `wrap_functions` (array of strings) symbols which should be wrapped during linking
 - `assignment_source_files` (array of strings) list of source files contained in each assignment (relative to the root of the submission repository)
 
 ## CLI options
