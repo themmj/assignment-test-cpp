@@ -7,7 +7,7 @@ Automatically run tests on a set of submissions for a programming assignment. As
 - assignment:
    - is a C++ project
    - with a `src/` folder containing all the code
-   - with a `main.c` containing the `main` function  
+   - with a `main.cpp` containing the `main` function  
 - each submission is a zip file containing the assignments whole repository (including `.git` folder)
 
 ## Features
